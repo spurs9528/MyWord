@@ -1,0 +1,239 @@
+/******************************************************************************/
+RTKlib函数功能简介：
+https://blog.csdn.net/jack909633117/article/details/90047690
+/**************************kalman滤波浮点解的计算********************************/
+rtklib使用kalman滤波进行高精度相对定位中浮点解的计算，流程主要分为以下几个步骤：
+1. 计算概略坐标
+    概略坐标的计算可以使用卡拉曼滤波方法或者加权最小二乘法，rtklib中使用的是后者。
+    对应代码：rtkpos--pntpos
+2. 计算卫星位置速度
+    对应代码： relpos--satposs
+3. 选择基准站与移动站共视卫星
+   对应代码： relpos--selsat
+4. kalman滤波状态更新
+    kalman滤波状态更新主要内容有3个，即a 状态转移矩阵的确定 b 初值确定 c 状态向量确定
+    rtklib中状态向量选择移动站的位置速度 以及单差整周模糊度（x,v,N1,N2,N3...Nm）
+    初值选择：坐标速度为第一步中计算的概略坐标，整周模糊度初值则使用伪距载波相位组合确定uppos upbias
+    状态转移矩阵的选择：对于位置速度可分为静态模型和动态模型 高动态模型，具体模型与单点定位kalman滤波模型一致uppos 
+                                        对于整周模糊度，未发生周跳则整周模糊度不变，发生周跳时，则重置滤波器，重新使用伪距载波组合计算概略整周模糊度为初值进行滤波
+   计算量测值与预测值差v和观测矩阵H(ddres)，并进行卡尔曼滤波的量测更更新filter,此步得到浮点解
+   周跳的判断：rtklib使用电离层残差法进行周跳的探测
+                        对应代码udbias-detslp_gf_L1L2/L1L5
+5. 重新计算双差ddres
+6. 使用LAMBDA算法计算固定解
+   对应代码： resamb_LAMBDA
+
+/**************************************文件功能********************************/
+convkml.c : google earth kml converter
+谷歌地图KML转换
+KML文件：
+是谷歌公司创建的一种地标性文件。用于记录某一地点、或连续地点的时间、经度、纬度、海拔
+等地理信息数据,供GE等有关软件使用。
+
+
+
+convrnx.c : rinex translator for rtcm and receiver raw data log
+RTCM协议差分数据转换成RINEX标准格式和接收原始数据日志
+RINEX（Receiver Independent Exchange Format/与接收机无关的交换格式）是一种在GPS测量
+应用中普遍采用的标准数据格式。
+RTCM：标准差分协议
+
+
+
+datum.c : datum transformation
+基准转变
+
+
+
+download.c : gnss data downloader
+GNSS数据下载
+
+
+
+ephemeris.c : satellite ephemeris and clock functions
+卫星星历和时钟功能
+
+
+
+geoid.c : geoid models
+大地水准面模型
+
+
+
+ionex.c : ionex functions
+ionex函数
+IONEX，用于电离层数据转换的正式格式，并通过验收和批准后用于电离层数据的转换
+
+
+
+lambda.c : integer ambiguity resolution
+整周模糊度
+整周模糊度（ambiguity of whole cycles）又称整周未知数，是在全球定位系统技术的载波相位
+测量时，载波相位与基准相位之间相位差的首观测值所对应的整周未知数。
+
+
+
+options.c : options functions
+选项函数
+
+
+
+pntpos.c : standard positioning
+标准定位
+
+
+
+postpos.c : post-processing positioning
+后处理定位
+
+
+
+ppp.c : precise point positioning
+精密单点定位
+精密单点定位指的是利用全球若干地面跟踪站的GPS 观测数据计算出的精密卫星轨道和卫星钟差,
+对单台GPS 接收机所采集的相位和伪距观测值进行定位解算。
+
+
+
+ppp_ar.c : ppp ambiguity resolution
+PPP歧义消解
+
+
+
+preceph.c : precise ephemeris and clock functions
+精密星历和时钟函数
+
+
+
+qzslex.c : qzss lex functions
+QZSS卫星系统 LEX函数
+
+
+
+rcvraw.c : receiver raw data functions
+接收原始数据函数
+
+
+
+rinex.c : rinex functions
+RINEX标准格式函数
+
+
+
+rtcm.c : rtcm functions
+RTCM协议差分数据函数
+
+
+
+rtcm2.c : rtcm ver.2 message functions
+RTCM版本2的消息函数
+
+
+
+rtcm3.c : rtcm ver.3 message decorder functions
+RTCM版本3消息解码函数
+
+
+
+rtcm3e.c : rtcm ver.3 message encoder functions
+RTCM版本3的消息编码器函数
+
+
+
+rtkcmn.c : rtklib common functions
+rtklib公共函数
+
+
+
+rtklib.h : rtklib constants, types and function prototypes
+rtklib常数，原型类型和功能
+
+
+
+rtkpos.c : precise positioning
+精密定位
+
+
+
+rtksvr.c : rtk server functions
+RTK服务器函数
+
+
+
+sbas.c : sbas functions
+SBAS函数
+SBAS（Satellite-Based Augmentation System），即星基增强系统，通过地球静止轨道（GEO）
+卫星搭载卫星导航增强信号转发器，可以向用户播发星历误差、卫星钟差、电离层延迟等多种修正
+信息，实现对于原有卫星导航系统定位精度的改进，从而成为各航天大国竞相发展的手段。
+
+
+
+solution.c : solution functions
+解决方案的功能
+
+
+
+stream.c : stream input/output functions
+流输入/输出功能
+
+
+
+streamsvr.c : stream server functions
+流服务器功能
+
+
+
+tle.c: NORAD TLE (two line element) functions
+两行式轨道数据（两线元）功能
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+rcv文件夹[数据格式解码文件夹]：-- 各种接收机
+1.
+binex.c : binex dependent functions
+BINEX相关功能
+
+
+
+crescent.c : hemisphere crescent/eclipse receiver dependent functions
+半球新月/月食接收器相关函数
+
+
+
+gw10.c : furuno GW-10 receiver functions
+古野gw-10接收功能
+
+
+
+javad.c : javad receiver dependent functions
+Javad接收机相关的函数
+
+
+
+notvatel.c : NovAtel OEM6/OEM5/OEM4/OEM3 receiver functions
+NovAtel OEM6/OEM5/OEM4/OEM3接收机函数
+NovAtel OEM：北斗星通
+
+
+
+nvs.c : NVS receiver dependent functions
+NVS接收机相关的函数
+
+
+
+rcvlex.c : qzss lex receiver dependent functions
+QZSS卫星系统 LEX接收机函数
+
+
+
+skytraq.c : skytraq receiver dependent functions
+威航接收机相关的函数
+
+
+
+ss2.c : superstar II receiver dependent functions
+超级巨星II接收机相关函数
+
+
+
+ublox.c : ublox receiver dependent functions
+ublox接收机相关函数
